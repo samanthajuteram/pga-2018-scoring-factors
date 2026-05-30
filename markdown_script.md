@@ -18,53 +18,47 @@ effects. Convergence diagnostics confirm proper MCMC mixing, posterior
 predictive checks validate model fit, and sensitivity analyses
 demonstrate that conclusions are robust across reasonable prior
 specifications. Results suggest that long-game performance has a
-statistically larger impact on scoring than short-game
-performance—contradicting Bobby Locke’s famous saying “You drive for
-show, but putt for dough”, however the different in effect size is
-minute.
+statistically larger impact on scoring than short-game performance.
 
 ## Introduction
 
-Growing up as a competitive golfer, I spent countless hours on the
-driving range, in short-game practice areas, and on putting greens. In
-the world of golf, there is a general idea that while having good long
-game is needed, what makes a golfer great is their shortgame. Bobby
-Locke, regarded as one of the greatest golfers said famously that “You
-drive for show, but putt for dough”(BBC Sport, 2024). Yet I have always
-been skeptical.
+Growing up as a competitive golfer, I spent many hours on the driving
+range, and in short-game practice areas. In the world of golf, there is
+a general idea that while having a good long game is needed, what makes
+a golfer great is their short game. In the 1950s, Bobby Locke, regarded
+as one of the greatest golfers coined the phrase : “You drive for show,
+but putt for dough”(BBC Sport, 2024). Yet I have always been skeptical.
 
-I always wondered if this idea was just an old saying or if it was
-really true. Anecdotally, I’ve watched players with mediocre putting
-games win tournaments because their long game was exceptional. And
-conversely, I’ve seen gifted putters struggle because their driving was
-inconsistent. This saying was coined prior to modern gold where advanced
-training, technology and coaching existed. This raises the question:
+I’ve watched players with mediocre putting games win tournaments because
+their long game was exceptional. I have also seen gifted putters
+struggle because their driving was inconsistent. I am not suggesting
+that Locke was wrong, but since the 1950s, equipment and training has
+advanced , clubs are tailored, and golf balls are optimized for distance
+and spin characteristics. A 2024 study even found a “positive
+correlation between technological advancements in golf equipment and
+improved performance” (Lasunción, C. N.,2024) .This raises the question:
 does Locke’s wisdom still hold in today’s professional golf, or has the
 game fundamentally changed?
 
-Professional golf has evolved substantially since Locke’s day in the
-1950s. Equipment has advanced clubs are more forgiving, golf balls are
-optimized for distance and spin characteristics. A 2024 study from even
-found a “positive correlation between technological advancements in golf
-equipment and improved performance.” (Lasunción, C. N.,2024)
-
-The PGA Tour has also professionalized its data collection, introducing
+The PGA Tour has made advancements in its data collection, introducing
 metrics like Strokes Gained, which isolate performance in specific
 components of the game (driving, approach shots, short game, and
-putting) against the field average. These metrics provide an
-unprecedented opportunity to quantitatively test the relative importance
-of different game components.
+putting) against the field average. These metrics provide an opportunity
+to quantitatively test the relative importance of different game
+components.
 
-This report develops a Bayesian linear regression model to compare the
-effects of long-game versus short-game performance on professional
-golfers’ average scores using 2018 PGA Tour season data. Rather than
-making arbitrary choices about which performance metrics to include, I
-construct composite indices that represent long game as the aggregation
-of off-the-tee and approach shot performance, and short game as the
-aggregation of around-the-green and putting performance. By estimating
-and comparing the posterior distributions of their respective effects on
-average score, I can directly assess whether long game or short game has
-a greater affect on the average score of a player.
+As such, this report develops a Bayesian linear regression model to
+compare the effects of long-game versus short-game performance on
+professional golfers’ average scores using 2018 PGA Tour season data
+while accounting for the number of rounds played. Composite metrics that
+represent long game as the aggregation of off-the-tee and approach shot
+performance, and short game as the aggregation of around-the-green and
+putting performance were constructed. By estimating and comparing the
+posterior distributions of their respective effects on average score, I
+can directly assess whether long game or short game has a greater effect
+on the average score of a player. Rounds played were introduced as a
+covariate in the model as well since it represents exposure in this
+scenario and therefore affects both the response and the predictors.
 
 The methodology employed is Bayesian inference using Markov chain Monte
 Carlo sampling in JAGS.
@@ -97,13 +91,14 @@ str(pga_18)
     ##  $ SG.ARG            : num  -0.027 0.194 -0.137 0.273 0.026 0.253 -0.027 -0.122 -0.186 0.235 ...
     ##  $ Money             : chr  "$2,680,487" "$2,485,203" "$2,700,018" "$1,986,608" ...
 
-*Quantifying Long Game and Short Game* To fairly test the effect of long
-game vs short game on scoring success, we must properly define what we
-mean by these terms. Many factors go in to each respectively. Not only
-number of shots, but distance, accuracy are important factors. Within
-each grouping it can even get more nuanced as short game incorporates
-both chipping and putting and long game incorporates driving and iron
-play.
+*Quantifying Long Game and Short Game*
+
+To fairly test the effect of long game vs short game on scoring success,
+we must properly define what we mean by these terms. Many factors go in
+to each respectively. Not only number of shots, but distance, accuracy
+are important factors. Within each grouping it can even get more nuanced
+as short game incorporates both chipping and putting and long game
+incorporates driving and iron play.
 
 The PGA tour has developed “SG” metrics or rather “Strokes Gained” as
 seen above. Strokes Gained is a comparative performance metric that
@@ -161,13 +156,12 @@ around 71 strokes with no extreme outliers indicating that a normal
 likelihood is appropriate. Both Long Game and Short Game composites are
 approximately normally distributed around zero with long game being
 slightly left skewed. Since strokes gained center on field average (=0)
-this makes sense.
+this makes sense. The distribution of Rounds Played is fairly uniform
+across the 50-110 range, indicating substantial variation in tournament
+participation among players.
 
-The distribution of the response suggest no violations of the normality
-assumption required for our Bayesian regression model. Although long
-game displays some skewness, the normality assumption in our model
-applies primarily to the response variable and residuals so it is not
-problematic.
+The distribution of the response suggests no violations of the normality
+assumption required for our Bayesian regression model.
 
 ``` r
 par(mfrow=c(1,3))
@@ -185,24 +179,33 @@ abline(lm(Average.Score~Rounds,data=pga_18),col='purple')
 ![](markdown_script_files/figure-gfm/unnamed-chunk-3-1.png)<!-- -->
 
 Both Short Game and Long Game have a roughly linear relationship with
-Average Score. As short game ability, score decreases. As long game
-increases, score decreases.
-
-This suggests that if your short game is better than tour average, your
+Average Score. As a short and long game ability, score decreases. This
+suggests that if your short game is better than tour average, your
 average score is lower and if your long game is better than tour
 average, your average score is lower.
+
+Average Score shows a weak negative relationship with Rounds Played.
+That is, golfers who compete in more rounds tend to have slightly lower
+average scores. Since participation seems to be somewhat related to
+average score, this motivates its inclusion in modeling as a confounding
+variable.
 
 ### Bayesian Model Specification
 
 $$ Y_i \sim \text{Normal}(\mu_i,\sigma^2) $$
 
-$$\mu_i=\beta_0+\beta_1\text{Short Game}_i+\beta_2\text{Long Game}_i$$
+$$\mu_i=\beta_0+\beta_1\text{Short Game}_i+\beta_2\text{Long Game}_i+\beta_3Rounds_i$$
 
 $$\beta_0 \sim \text{Normal}(71,2^2)$$
 
-$$\beta_1,beta_2 \sim \text{Normal}(0,5^2)$$
+$$\beta_1,\beta_2, \beta_3 \sim \text{Normal}(0,5^2)$$
 
 $$\sigma^2 \sim \text{Inverse-Gamma}(0.1,0.1)$$
+
+Notice that rounds was chosen to be included as the a confounding
+variable. Players who compete in more rounds have more experience (for
+that season) and reps, which could improve performance consistency and
+average score independent of long/short game skill.
 
 Scatterplots suggested approximately linear relationships between the
 predictors and Average.Score, while the response distribution appeared
@@ -269,9 +272,7 @@ length(Y)
 
     ## [1] 193
 
-After removing missing values, we have 193 observations. It should be
-noted that long game ans short game are already on comparable scales
-(both measured in strokes gained) and as such were not standardized.
+After removing missing values, we have 193 observations.
 
 ### MCMC Implemenatation
 
@@ -376,10 +377,11 @@ round(effectiveSize(samples),1)
 ```
 
     ## beta[1] beta[2] beta[3] 
-    ## 48072.5 42231.8 42622.3
+    ## 47023.0 41859.5 41023.7
 
-The effective sample sizes (44276.0,46417.6) are substantially larger
-than the number of iterations, confirming efficient MCMC sampling.
+The effective sample sizes ( 47079.0, 40534.4, 41284.6) are
+substantially larger than the number of iterations, confirming efficient
+MCMC sampling.
 
 *Gelman-Rubin Statistic*
 
@@ -433,8 +435,8 @@ sum
     ## 2. Quantiles for each variable:
     ## 
     ##              2.5%    25%    50%    75%  97.5%
-    ## Short Game -0.456 -0.436 -0.425 -0.415 -0.394
-    ## Long Game  -0.673 -0.652 -0.641 -0.630 -0.609
+    ## Short Game -0.457 -0.436 -0.426 -0.415 -0.394
+    ## Long Game  -0.674 -0.652 -0.641 -0.630 -0.609
     ## Rounds     -0.077 -0.055 -0.044 -0.033 -0.012
 
 The expected value of the regression coefficient of Short Game is -0.426
@@ -468,12 +470,13 @@ importance compared to the era when Locke’s maxim was coined.
 To ensure that the conclusions found dont hinge on the choice of prior,
 we conduct a sensitivity analysis. We will test two additional priors:
 
-1.  “Skeptical” prior: $\beta_1,\beta_2 \sim \text{Normal}(0,0.5^2)$
+1.  “Skeptical” prior:
+    $\beta_1,\beta_2,\beta_3 \sim \text{Normal}(0,0.5^2)$
 
 - A prior belief that changes in strokes gained shouldn’t cause dramatic
   changes in average score
 
-2.  Flat prior: $\beta_1,\beta_2 \sim \text{Normal}(0,100^2)$
+2.  Flat prior: $\beta_1,\beta_2,\beta_3 \sim \text{Normal}(0,100^2)$
 
 - Essentially lets the data fully determine the posterior.
 
@@ -646,8 +649,8 @@ sum
     ## 2. Quantiles for each variable:
     ## 
     ##              2.5%    25%    50%    75%  97.5%
-    ## Short Game -0.462 -0.442 -0.431 -0.420 -0.399
-    ## Long Game  -0.685 -0.664 -0.654 -0.643 -0.622
+    ## Short Game -0.462 -0.441 -0.431 -0.420 -0.399
+    ## Long Game  -0.685 -0.665 -0.654 -0.643 -0.622
 
 The expected value of the regression coefficient of Short Game is -0.431
 while the expected value of the regression coefficient of Long Game is
@@ -663,42 +666,35 @@ with the main model.
 
 ## Discussion and Future Work
 
-This analysis applied Bayesian linear regression to see if long game or
-short game had a greater impact on professional golfer’s average scores,
-specifically in the 2017-2018 season. Composite metrics were made in
-order to quantify a player’s long game ans short game. Using these
-metrics, we estimated the posterior distributions of their effects on
-average score. The main findings were:
+This analysis applied Bayesian linear regression to test whether long
+game or short game has a greater impact on professional golfers’ average
+scores in the 2018 PGA Tour season. Composite metrics were constructed
+to quantify each component, and posterior distributions of their effects
+on average score were estimated. Main findings:
 
 1.  Both Long Game and Short Game substantially influence average score,
-    with posterior mean effects of -1.050 and -1.015 strokes per
+    with posterior mean effects of -0.674 and -0.457 strokes per
     standard deviation increase, respectively.
 
 2.  The posterior probability that Long Game has a larger effect than
-    Short Game is 79.16%, providing moderate-to-strong evidence that
-    driving and approach play have a measurably larger impact on scoring
-    than short-game execution.
-
-3.  The credible intervals for both effects overlap substantially (Long
-    Game: \[-1.100, -0.999\], Short Game: \[-1.089, -0.940\]),
-    indicating that while the effects are statistically distinguishable,
-    their practical magnitudes are similar.
+    Short Game is 100% when controlling for rounds played, providing
+    strong evidence that driving and approach play have a greater impact
+    on scoring than short-game execution.
 
 A sensitivity analysis was conducted and demonstrated that these
 conclusions are robust across different prior specifications. Therefore
 we can say that the data drove inference rather than the prior.
 
-Our initial goal was to test the validity of the “You drive for show,
-but putt for dough” assertion in modern golf. Our findings suggests this
+The initial goal was to test the validity of the “You drive for show,
+but putt for dough” assertion in modern golf. The findings suggest this
 wisdom requires revision for the state of golf today. Long game
-performance appears to have slightly but measurably larger influence on
-average score than short game performance.
+performance appears to have a measurably larger influence on average
+score than short game performance.
 
 It should be noted that this does not diminish the importance of short
 game. Both components proved to be substantially important for scoring
-success. The difference in effect sizes is modest (0.035), and credible
-intervals overlap substantially. A more accurate saying may be ” You
-need to both drive and putt for the dough, but drive slightly more.”
+success. A more accurate saying may be ” You need to both drive and putt
+for the dough, but drive slightly more.”
 
 *Limitations*
 
@@ -711,9 +707,8 @@ highlight the limitations of this analysis.
 
 2.  **Metric Selection:** This analysis utilized the strokes gained
     metrics. While this is a well-known metric in the field, it only
-    represents one operalization of performance. Given our effect sizes
-    were so similar, it is not unprecedented to say alternative metrics
-    might yield different conclusions.
+    represents one approach to measuring performance. Alternative
+    metrics might yield different conclusions.
 
 3.  **Population:** All players are PGA tour professionals, who are
     experts in the game of golf. As such, these findings should not be
@@ -730,12 +725,12 @@ highlight the limitations of this analysis.
 Given more time, the following avenues would have been explored:
 
 - **Multi-year analysis:** Expanding the analysis from Locke’s time
-  (1950’s) to present ould test whether the relative importance of long
-  and short games has shifted over time.
+  (1950’s) or as far back as the stats go to present could test whether
+  the relative importance of long and short games has shifted over time.
 
 - **Hierarchical modeling:** A multilevel model treating individual
   golfers as random effects could account for within-player consistency
-  and provide player-specific estimates of long vs. short game
+  and provide player specific estimates of long vs. short game
   importance.
 
 ## Conclusion
@@ -743,21 +738,18 @@ Given more time, the following avenues would have been explored:
 This Bayesian analysis provides quantitative evidence that in the 2018
 PGA Tour season, Long Game performance (driving and approach shots) had
 a measurably larger impact on average score than Short Game performance
-(short-game shots and putting). However, both components substantially
-influence scoring, and the difference in effect sizes is modest. While
-this finding challenges the long standing connotation that short game is
-more important than long game, it does not render it obsolete.Instead,
-it suggests that professional golf in the modern era demands excellence
-across all facets of the game, with perhaps a marginal emphasis on
-distance and consistency off the tee.
+(around the green shots and putting). However, both components
+substantially influence scoring. While this finding challenges the long
+standing connotation that short game is more important than long game,
+it does not render it obsolete. Instead, it suggests that professional
+golf in the modern era demands excellence across all facets of the game,
+with perhaps a slightly greater emphasis on distance and consistency off
+the tee.
 
-For golfers seeking to improve, these results suggest that neither
-component should be neglected. Long-game development may yield slightly
-greater scoring improvement per unit effort invested, but this marginal
-advantage should not come at the expense of short-game proficiency. The
-data argue for balanced development of both skills, with the
-understanding that in contemporary professional golf, all components
-matter significantly.
+For professional golfers seeking to improve, the results suggest that
+neither component should be neglected. While long-game development may
+offer a slightly greater return on investment, this marginal advantage
+should not come at the expense of short-game proficiency.
 
 ## References
 
